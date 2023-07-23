@@ -19,7 +19,7 @@ def generate_launch_description():
             ("/imu/data", "/madgwick/imu")
         ],
         parameters=[
-            {"fixed_frame": "base_link"},
+            {"fixed_frame": "odom"},
             {"use_mag": False},
             {"publish_tf": True}
         ]
@@ -60,52 +60,6 @@ def generate_launch_description():
             ("rgbd_image", "/rgbd_image")]
         )
 
-
-
-    rtabmap_odom=Node(
-        namespace='rtabmap',
-        package='rtabmap_odom', 
-        executable='rgbd_odometry', 
-        output="screen",
-        parameters=[{
-            "subscribe_rgbd": True,
-            "queue_size": 10,
-            "frame_id": "base_link",
-            "publish_tf": True,
-            "approx_sync": True,
-            "wait_for_transform": 0.2,
-            # "wait_imu_to_init": True,
-            }],
-        remappings=[
-            ("imu", "/madgwick/imu"),
-            ("rgbd_image", "/rgbd_image")]
-        )
-
-
-
-    rtabmap_slam=Node(
-        namespace='rtabmap',
-        package='rtabmap_slam', 
-        executable='rtabmap', 
-        output="screen",
-        parameters=[{
-            "subscribe_depth": False,
-            "subscribe_rgbd": True,
-            "queue_size": 10,
-            "frame_id": "base_link",
-            "publish_tf": True,
-            "map_frame_id": "map",
-            "odom_frame_id": "odom",
-            "approx_sync": True
-            }],
-        remappings=[
-            ("odom", "/odom"),
-            ("rgbd_image", "/rgbd_image"),
-            ("grid_map", "/map"), 
-            ("imu", "/madgwick/imu")
-            ]
-        )
-
     
     tf_cam_base_link = Node(package = "tf2_ros", 
                        executable = "static_transform_publisher",
@@ -114,7 +68,5 @@ def generate_launch_description():
     ld.add_action(madgwick_imu_filter)
     ld.add_action(realsense2_launch)
     ld.add_action(rgbd_sync)
-    ld.add_action(rtabmap_odom)
-    ld.add_action(rtabmap_slam)
     ld.add_action(tf_cam_base_link)
     return ld

@@ -11,12 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+import launch
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, RegisterEventHandler
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
+
+import launch_ros
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -32,6 +36,14 @@ def generate_launch_description():
             description="Start RViz2 automatically with this launch file.",
         )
     )
+
+
+    pkg_share = launch_ros.substitutions.FindPackageShare(package='wheel_chair').find('wheel_chair')
+
+    default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
+
+    arg_rvizconfig = launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
+                                            description='Absolute path to rviz config file')
 
     # Initialize Arguments
     gui = LaunchConfiguration("gui")
@@ -55,9 +67,8 @@ def generate_launch_description():
             "wheelchair_controllers.yaml",
         ]
     )
-    rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("wheel_chair"), "rviz", "urdf_config.rviz"]
-    )
+
+
 
     control_node = Node(
         package="controller_manager",
@@ -74,14 +85,15 @@ def generate_launch_description():
             ("/diff_drive_controller/cmd_vel_unstamped", "/cmd_vel"),
         ],
     )
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
-        condition=IfCondition(gui),
+    
+    rviz_node = launch_ros.actions.Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
+
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -112,6 +124,7 @@ def generate_launch_description():
     )
 
     nodes = [
+        arg_rvizconfig,
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
