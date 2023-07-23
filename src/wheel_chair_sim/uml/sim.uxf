@@ -1,0 +1,11 @@
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>550</x><y>400</y><w>100</w><h>30</h></coordinates><panel_attributes>Joint State</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>670</x><y>400</y><w>100</w><h>30</h></coordinates><panel_attributes>Gazebo</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>790</x><y>400</y><w>100</w><h>30</h></coordinates><panel_attributes>RViZ</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>550</x><y>350</y><w>130</w><h>30</h></coordinates><panel_attributes>Robot Localization</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>430</x><y>300</y><w>100</w><h>30</h></coordinates><panel_attributes>Navigation</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>430</x><y>350</y><w>100</w><h>30</h></coordinates><panel_attributes>SLAM</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>430</x><y>400</y><w>100</w><h>30</h></coordinates><panel_attributes>Robot State</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>700</x><y>350</y><w>110</w><h>30</h></coordinates><panel_attributes>slam_toolbox</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>430</x><y>450</y><w>460</w><h>150</h></coordinates><panel_attributes>URDF
+--
+Robot definition
+--
+Gazebo Sensors
+-- IMU
+-- Camera
+--
+Gazebo diff_drive
+--
+Gazebo pluggin</panel_attributes><additional_attributes></additional_attributes></element></diagram>

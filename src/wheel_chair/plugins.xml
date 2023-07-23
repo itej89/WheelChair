@@ -1,0 +1,9 @@
+<library path="wheel_chair">
+  <class name="wheel_chair/WheelChairSystemHardware"
+         type="wheel_chair::WheelChairSystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Thre Wheel Chair Diff Drive Hardware interface.
+    </description>
+  </class>
+</library>

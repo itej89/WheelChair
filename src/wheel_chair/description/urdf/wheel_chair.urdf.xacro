@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!-- Basic differential drive mobile base -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wheel_chair_robot">
+  <xacro:arg name="prefix" default="" />
+
+  <xacro:include filename="$(find wheel_chair)/urdf/wheel_chair_description.urdf.xacro" />
+
+
+  <!-- Import diffbot ros2_control description -->
+  <xacro:include filename="$(find wheel_chair)/ros2_control/wheel_chair.ros2_control.xacro" />
+
+  <xacro:wheel_chair prefix="$(arg prefix)" />
+
+  <xacro:wheel_chair_ros2_control
+    name="wheel_chair" prefix="$(arg prefix)" />
+
+</robot>
