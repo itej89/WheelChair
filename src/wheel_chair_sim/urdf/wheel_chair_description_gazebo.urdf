@@ -132,7 +132,7 @@
       </geometry>
     </collision>
 
-    <xacro:sphere_inertia m="0.1" r="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
+    <xacro:sphere_inertia m="0.01" r="${(wheel_radius+wheel_zoff-(base_height/2))}"/>
 
   </link>
 
@@ -320,7 +320,7 @@
 <joint name="lidar_joint" type="fixed">
   <parent link="base_link"/>
   <child link="lidar_link"/>
-  <origin xyz="0 0 0.12" rpy="0 0 0"/>
+  <origin xyz="0 0 0.22" rpy="0 0 0"/>
 </joint>
 
 <gazebo reference="lidar_link">
@@ -339,7 +339,7 @@
       </scan>
       <range>
         <min>0.120000</min>
-        <max>3.5</max>
+        <max>5.0</max>
         <resolution>0.015000</resolution>
       </range>
       <noise>

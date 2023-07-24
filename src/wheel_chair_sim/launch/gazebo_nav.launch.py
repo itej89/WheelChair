@@ -54,7 +54,7 @@ def generate_launch_description():
             'params_file': PathJoinSubstitution([
                 FindPackageShare('navigation'),
                 'config',
-                'nav2_params.yaml'
+                'nav2_gazebo_params.yaml'
             ])
         }.items()
     )
