@@ -63,7 +63,7 @@ def generate_launch_description():
     
     tf_cam_base_link = Node(package = "tf2_ros", 
                        executable = "static_transform_publisher",
-                       arguments = ["0", "0", "0", "0", "0", "0", "base_link", "camera_link"])
+                       arguments = ["0.0762", "0", "0.2667", "0", "0", "0", "base_link", "camera_link"])
 
     ld.add_action(madgwick_imu_filter)
     ld.add_action(realsense2_launch)

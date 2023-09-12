@@ -14,6 +14,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   hardware_interface
   pluginlib
   rclcpp
+  serial
   rclcpp_lifecycle
 )
 
@@ -34,12 +35,13 @@ add_library(
 target_compile_features(wheel_chair PUBLIC cxx_std_17)
 target_include_directories(wheel_chair PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/serial-ros2/include>
 $<INSTALL_INTERFACE:include/wheel_chair>
 )
 
 ament_target_dependencies(
   wheel_chair PUBLIC
-  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+  ${THIS_PACKAGE_INCLUDE_DEPENDS} serial
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,

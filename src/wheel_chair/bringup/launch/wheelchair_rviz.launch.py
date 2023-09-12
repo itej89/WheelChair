@@ -76,7 +76,6 @@ def generate_launch_description():
         parameters=[robot_description, robot_controllers],
         output="both",
     )
-    
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -129,7 +128,7 @@ def generate_launch_description():
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
-        # delay_rviz_after_joint_state_broadcaster_spawner,
+        delay_rviz_after_joint_state_broadcaster_spawner,
         delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
     ]
 

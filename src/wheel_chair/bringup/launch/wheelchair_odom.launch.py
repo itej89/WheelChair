@@ -17,28 +17,44 @@ def generate_launch_description():
     arg_sim = launch_ros.actions.SetParameter(name='use_sim_time', value=False)
 
 
-    navigation_launch = actions.IncludeLaunchDescription(
+    hw_description_launch = actions.IncludeLaunchDescription(
         launch_description_sources.PythonLaunchDescriptionSource([
             PathJoinSubstitution([
-                FindPackageShare('navigation'),
+                FindPackageShare('wheel_chair'),
                 'launch',
-                'navigation_launch.py'
+                'wheelchair.launch.py'
             ])
         ]),
         launch_arguments={
-            'params_file': PathJoinSubstitution([
+            'rvizconfig': PathJoinSubstitution([
                 FindPackageShare('navigation'),
-                'config',
-                'nav2.yaml'
+                'rviz',
+                'nav.rviz'
             ])
         }.items()
     )
+    
+    perception_dir = get_package_share_directory('perception')
+
+    perception_launch = actions.IncludeLaunchDescription(
+        launch_description_sources.PythonLaunchDescriptionSource(
+                perception_dir + '/launch/realsense2.launch.py'))
+
+    
+    slam_dir = get_package_share_directory('slam')
+
+    slam_launch = actions.IncludeLaunchDescription(
+        launch_description_sources.PythonLaunchDescriptionSource(
+                slam_dir + '/launch/slam_wheel_chair.launch.py'))
+
 
     #Make launch description
     ld = launch.LaunchDescription()
 
     #Add nodes
     ld.add_action(arg_sim)
-    ld.add_action(navigation_launch)
+    ld.add_action(hw_description_launch)
+    ld.add_action(perception_launch)
+    ld.add_action(slam_launch)
 
     return ld

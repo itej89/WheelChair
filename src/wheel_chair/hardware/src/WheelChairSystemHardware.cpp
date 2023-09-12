@@ -29,71 +29,84 @@ namespace wheel_chair
 CallbackReturn WheelChairSystemHardware::on_init(
   const hardware_interface::HardwareInfo & info)
 {
-  if (
-    hardware_interface::SystemInterface::on_init(info) !=
-    CallbackReturn::SUCCESS)
+    if (
+      hardware_interface::SystemInterface::on_init(info) !=
+      CallbackReturn::SUCCESS)
+      {
+        return CallbackReturn::ERROR;
+      }
+
+
+
+    base_port = std::make_shared<serial::Serial>("/dev/ttyACM0", 115200, serial::Timeout::simpleTimeout(1000));
+    if(base_port->isOpen()){
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Base platform connection has been succesfully opened.");
+    }
+    else
     {
-      return CallbackReturn::ERROR;
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Unable to open connection to the base platform device.");
+        return CallbackReturn::ERROR;
     }
 
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  hw_start_sec_ = std::stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
-  hw_stop_sec_ = std::stod(info_.hardware_parameters["example_param_hw_stop_duration_sec"]);
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
-  hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
-  for (const hardware_interface::ComponentInfo & joint : info_.joints)
-  {
-    // DiffBotSystem has exactly two states and one cwheel_chair.urdfommand interface on each joint
-    if (joint.command_interfaces.size() != 1)
+    hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+
+    for (const hardware_interface::ComponentInfo & joint : info_.joints)
     {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("WheelChairSystemHardware"),
-        "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
-        joint.command_interfaces.size());
-      return CallbackReturn::ERROR;
+      // DiffBotSystem has exactly two states and one cwheel_chair.urdfommand interface on each joint
+      if (joint.command_interfaces.size() != 1)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Joint '%s' has %zu command interfaces found. 1 expected.", joint.name.c_str(),
+          joint.command_interfaces.size());
+        return CallbackReturn::ERROR;
+      }
+
+      if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
+          joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
+        return CallbackReturn::ERROR;
+      }
+
+      if (joint.state_interfaces.size() != 2)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
+          joint.state_interfaces.size());
+        return CallbackReturn::ERROR;
+      }
+
+      if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Joint '%s' have '%s' as first state interface. '%s' expected.", joint.name.c_str(),
+          joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
+        return CallbackReturn::ERROR;
+      }
+
+      if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
+      {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("WheelChairSystemHardware"),
+          "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
+          joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
+        return CallbackReturn::ERROR;
+      }
     }
 
-    if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("WheelChairSystemHardware"),
-        "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
-        joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-      return CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces.size() != 2)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("WheelChairSystemHardware"),
-        "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
-        joint.state_interfaces.size());
-      return CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("WheelChairSystemHardware"),
-        "Joint '%s' have '%s' as first state interface. '%s' expected.", joint.name.c_str(),
-        joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
-      return CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
-    {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("WheelChairSystemHardware"),
-        "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
-        joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-      return CallbackReturn::ERROR;
-    }
-  }
-
-  return CallbackReturn::SUCCESS;
+    return CallbackReturn::SUCCESS;
 }
 
 std::vector<hardware_interface::StateInterface> WheelChairSystemHardware::export_state_interfaces()
@@ -125,17 +138,8 @@ std::vector<hardware_interface::CommandInterface> WheelChairSystemHardware::expo
 CallbackReturn WheelChairSystemHardware::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Activating ...please wait...");
-
-  for (auto i = 0; i < hw_start_sec_; i++)
-  {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(
-      rclcpp::get_logger("WheelChairSystemHardware"), "%.1f seconds left...", hw_start_sec_ - i);
-  }
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
-
+    
   // set some default values
   for (auto i = 0u; i < hw_positions_.size(); i++)
   {
@@ -155,16 +159,7 @@ CallbackReturn WheelChairSystemHardware::on_activate(
 CallbackReturn WheelChairSystemHardware::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Deactivating ...please wait...");
-
-  for (auto i = 0; i < hw_stop_sec_; i++)
-  {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(
-      rclcpp::get_logger("WheelChairSystemHardware"), "%.1f seconds left...", hw_stop_sec_ - i);
-  }
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Successfully deactivated!");
 
@@ -173,19 +168,57 @@ CallbackReturn WheelChairSystemHardware::on_deactivate(
 
 hardware_interface::return_type WheelChairSystemHardware::read()
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  for (std::size_t i = 0; i < hw_velocities_.size(); i++)
-  {
-    // Simulate DiffBot wheels's movement as a first-order system
-    // Update the joint status: this is a revolute joint without any limit.
-    // Simply integrates
-    hw_positions_[i] = hw_positions_[1] + 1 * hw_velocities_[i];
+  double SCALE_FACTOR = 10000;
 
-    RCLCPP_INFO(
-      rclcpp::get_logger("WheelChairSystemHardware"),
-      "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
-      hw_velocities_[i], info_.joints[i].name.c_str());
-  }
+  uint8_t BASE_COMMAND_READ_STATE[8] = {0x1F, 0xA8, 0x01, 0x20, 0x01, 0x01 ,0x1F, 0xA9};
+  std::vector<uint8_t> read_command(BASE_COMMAND_READ_STATE, BASE_COMMAND_READ_STATE + sizeof(BASE_COMMAND_READ_STATE) / sizeof(BASE_COMMAND_READ_STATE[0]) );
+
+  std::vector<uint8_t> BASE_STATE;
+  
+  base_port->write(read_command);
+
+  base_port->read (BASE_STATE, 23);
+
+  uint32_t LeftWheelPos = BASE_STATE[3];
+  LeftWheelPos = (LeftWheelPos << 8 | BASE_STATE[4]);
+  LeftWheelPos = (LeftWheelPos << 8 | BASE_STATE[5]);
+  LeftWheelPos = (LeftWheelPos << 8 | BASE_STATE[6]);
+
+  uint32_t RightWheelPos = BASE_STATE[7];
+  RightWheelPos = (RightWheelPos << 8 | BASE_STATE[8]);
+  RightWheelPos = (RightWheelPos << 8 | BASE_STATE[9]);
+  RightWheelPos = (RightWheelPos << 8 | BASE_STATE[10]);
+
+  uint8_t LEFT_WHEEL_DIR = BASE_STATE[16];
+  uint32_t LeftWheelVel = BASE_STATE[12];
+  LeftWheelVel = (LeftWheelVel << 8 | BASE_STATE[13]);
+  LeftWheelVel = (LeftWheelVel << 8 | BASE_STATE[14]);
+  LeftWheelVel = (LeftWheelVel << 8 | BASE_STATE[15]);
+
+  uint8_t RIGHT_WHEEL_DIR = BASE_STATE[16];
+  uint32_t RightWheelVel = BASE_STATE[17];
+  RightWheelVel = (RightWheelVel << 8 | BASE_STATE[18]);
+  RightWheelVel = (RightWheelVel << 8 | BASE_STATE[19]);
+  RightWheelVel = (RightWheelVel << 8 | BASE_STATE[20]);
+
+  hw_positions_[0] = (LeftWheelPos*1.0)/SCALE_FACTOR;
+  hw_positions_[1] = (RightWheelPos*1.0)/SCALE_FACTOR;
+
+  hw_velocities_[0] = (LEFT_WHEEL_DIR*-2+1)*(LeftWheelVel*1.0)/SCALE_FACTOR;
+  hw_velocities_[1] = (RIGHT_WHEEL_DIR*-2+1)*(RightWheelVel*1.0)/SCALE_FACTOR;
+
+  hw_velocities_[0] = hw_velocities_[0]/1000;
+  hw_velocities_[1] = hw_velocities_[1]/1000;
+
+
+  // for (std::size_t i = 0; i < hw_velocities_.size(); i++)
+  // {
+
+  //   RCLCPP_INFO(
+  //     rclcpp::get_logger("WheelChairSystemHardware"),
+  //     "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
+  //     hw_velocities_[i], info_.joints[i].name.c_str());
+  // }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;
@@ -194,18 +227,50 @@ hardware_interface::return_type WheelChairSystemHardware::read()
 hardware_interface::return_type WheelChairSystemHardware::write()
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Writing...");
+  // RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Writing...");
 
-  for (auto i = 0u; i < hw_commands_.size(); i++)
-  {
-    // Simulate sending commands to the hardware
-    RCLCPP_INFO(
-      rclcpp::get_logger("WheelChairSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
-      info_.joints[i].name.c_str());
+  // for (auto i = 0u; i < hw_commands_.size(); i++)
+  // {
+  //   // Simulate sending commands to the hardware
+  //   RCLCPP_INFO(
+  //     rclcpp::get_logger("WheelChairSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
+  //     info_.joints[i].name.c_str());
 
-    hw_velocities_[i] = hw_commands_[i];
-  }
-  RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Joints successfully written!");
+  //   hw_velocities_[i] = hw_commands_[i];
+  // }
+
+
+  uint8_t BASE_COMMAND_WRITE_VELOCITIES[18] = {0x1F, 0xA8, 0x0B, 0x10, 
+  0x00, 
+  0x00, 0x00, 0x00, 0x00, 
+  0x00, 
+  0x00, 0x00, 0x00, 0x00,
+  0x01, 0x01 ,0x1F, 0xA9};
+
+  BASE_COMMAND_WRITE_VELOCITIES[4] = hw_velocities_[0] < 0 ? 0x01 : 0x00;
+  BASE_COMMAND_WRITE_VELOCITIES[9] = hw_velocities_[1] < 0 ? 0x01 : 0x00;
+
+  double vel_l_mm_per_sec = hw_velocities_[0] * 1000;
+  double vel_r_mm_per_sec = hw_velocities_[1] * 1000;
+
+  uint32_t left_vel  = vel_l_mm_per_sec;
+  uint32_t right_vel = vel_r_mm_per_sec;
+
+  BASE_COMMAND_WRITE_VELOCITIES[5] = (left_vel >> 24) & 0xFF;
+  BASE_COMMAND_WRITE_VELOCITIES[6] = (left_vel >> 16) & 0xFF;
+  BASE_COMMAND_WRITE_VELOCITIES[7] = (left_vel >> 8) & 0xFF;
+  BASE_COMMAND_WRITE_VELOCITIES[8] = (left_vel) & 0xFF;
+
+  BASE_COMMAND_WRITE_VELOCITIES[10] = (right_vel >> 24) & 0xFF;
+  BASE_COMMAND_WRITE_VELOCITIES[11] = (right_vel >> 16) & 0xFF;
+  BASE_COMMAND_WRITE_VELOCITIES[12] = (right_vel >> 8) & 0xFF;
+  BASE_COMMAND_WRITE_VELOCITIES[13] = (right_vel) & 0xFF;
+
+
+  std::vector<uint8_t> write_command(BASE_COMMAND_WRITE_VELOCITIES, BASE_COMMAND_WRITE_VELOCITIES + sizeof(BASE_COMMAND_WRITE_VELOCITIES) / sizeof(BASE_COMMAND_WRITE_VELOCITIES[0]) );
+  base_port->write(write_command);
+
+  // RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Joints successfully written!");
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;

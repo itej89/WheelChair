@@ -35,8 +35,8 @@ def generate_launch_description():
     lifecycle_nodes = ['controller_server',
                        'planner_server',
                        'recoveries_server',
-                       'bt_navigator',
-                       'waypoint_follower']
+                       'bt_navigator']
+                    #    'waypoint_follower']
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -76,7 +76,7 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'params_file',
-            default_value=os.path.join(bringup_dir, 'params', 'nav2_gazebo_params.yaml'),
+            default_value=os.path.join(bringup_dir, 'params', 'nav2.yaml'),
             description='Full path to the ROS2 parameters file to use'),
 
         Node(
@@ -110,13 +110,13 @@ def generate_launch_description():
             parameters=[configured_params],
             remappings=remappings),
 
-        Node(
-            package='nav2_waypoint_follower',
-            executable='waypoint_follower',
-            name='waypoint_follower',
-            output='screen',
-            parameters=[configured_params],
-            remappings=remappings),
+        # Node(
+        #     package='nav2_waypoint_follower',
+        #     executable='waypoint_follower',
+        #     name='waypoint_follower',
+        #     output='screen',
+        #     parameters=[configured_params],
+        #     remappings=remappings),
 
         Node(
             package='nav2_lifecycle_manager',
