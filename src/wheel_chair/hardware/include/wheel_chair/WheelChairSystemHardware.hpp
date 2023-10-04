@@ -69,6 +69,10 @@ namespace wheel_chair
 
       CallbackReturn on_deactivate(
         const rclcpp_lifecycle::State & previous_state) override;
+        
+        
+      CallbackReturn on_configure(
+        const rclcpp_lifecycle::State & previous_state) override;
 
       hardware_interface::return_type read() override;
 

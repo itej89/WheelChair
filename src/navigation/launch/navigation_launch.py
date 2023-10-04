@@ -45,12 +45,14 @@ def generate_launch_description():
     # TODO(orduno) Substitute with `PushNodeRemapping`
     #              https://github.com/ros2/launch_ros/issues/56
     remappings = [('/tf', 'tf'),
-                  ('/tf_static', 'tf_static')]
+                  ('/tf_static', 'tf_static'),
+                  ("/cmd_vel", "/wheel_chair_base_controller/cmd_vel_unstamped")]
 
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {
         'use_sim_time': use_sim_time,
         'autostart': autostart}
+
 
     configured_params = RewrittenYaml(
             source_file=params_file,

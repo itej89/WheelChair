@@ -20,6 +20,7 @@
 #include <limits>
 #include <memory>
 #include <vector>
+#include <sstream>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -114,10 +115,10 @@ std::vector<hardware_interface::StateInterface> WheelChairSystemHardware::export
   std::vector<hardware_interface::StateInterface> state_interfaces;
   for (auto i = 0u; i < info_.joints.size(); i++)
   {
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
+      state_interfaces.emplace_back(hardware_interface::StateInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
+      state_interfaces.emplace_back(hardware_interface::StateInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
   }
 
   return state_interfaces;
@@ -128,17 +129,44 @@ std::vector<hardware_interface::CommandInterface> WheelChairSystemHardware::expo
   std::vector<hardware_interface::CommandInterface> command_interfaces;
   for (auto i = 0u; i < info_.joints.size(); i++)
   {
-    command_interfaces.emplace_back(hardware_interface::CommandInterface(
-      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_[i]));
+      command_interfaces.emplace_back(hardware_interface::CommandInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_[i]));
   }
 
   return command_interfaces;
 }
 
+CallbackReturn WheelChairSystemHardware::on_configure(
+  const rclcpp_lifecycle::State & previous_state)
+{
+  RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Configuring ...please wait...");
+
+   if (
+      hardware_interface::SystemInterface::on_configure(previous_state) !=
+      CallbackReturn::SUCCESS)
+      {
+        return CallbackReturn::ERROR;
+      }
+
+
+
+  RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Successfully Configured!");
+
+  return CallbackReturn::SUCCESS;
+}
+
 CallbackReturn WheelChairSystemHardware::on_activate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
+  const rclcpp_lifecycle::State & previous_state)
 {
   RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Activating ...please wait...");
+
+   if (
+      hardware_interface::SystemInterface::on_activate(previous_state) !=
+      CallbackReturn::SUCCESS)
+      {
+        return CallbackReturn::ERROR;
+      }
+
     
   // set some default values
   for (auto i = 0u; i < hw_positions_.size(); i++)
@@ -157,9 +185,18 @@ CallbackReturn WheelChairSystemHardware::on_activate(
 }
 
 CallbackReturn WheelChairSystemHardware::on_deactivate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
+  const rclcpp_lifecycle::State & previous_state)
 {
   RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Deactivating ...please wait...");
+
+
+   if (
+      hardware_interface::SystemInterface::on_deactivate(previous_state) !=
+      CallbackReturn::SUCCESS)
+      {
+        return CallbackReturn::ERROR;
+      }
+
 
   RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Successfully deactivated!");
 
@@ -210,6 +247,16 @@ hardware_interface::return_type WheelChairSystemHardware::read()
   hw_velocities_[0] = hw_velocities_[0]/1000;
   hw_velocities_[1] = hw_velocities_[1]/1000;
 
+    for (auto i = 0u; i < hw_commands_.size(); i++)
+  {
+    RCLCPP_INFO(
+      rclcpp::get_logger("WheelChairSystemHardware"), "Computed velocities command %.5f for '%s'!", hw_velocities_[i],
+      info_.joints[i].name.c_str()); 
+
+    // Simulate sending commands to the hardware
+    // hw_velocities_[i] = hw_commands_[i]; 
+  }
+
 
   // for (std::size_t i = 0; i < hw_velocities_.size(); i++)
   // {
@@ -227,17 +274,17 @@ hardware_interface::return_type WheelChairSystemHardware::read()
 hardware_interface::return_type WheelChairSystemHardware::write()
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  // RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Writing...");
+  RCLCPP_INFO(rclcpp::get_logger("WheelChairSystemHardware"), "Writing...");
 
-  // for (auto i = 0u; i < hw_commands_.size(); i++)
-  // {
-  //   // Simulate sending commands to the hardware
-  //   RCLCPP_INFO(
-  //     rclcpp::get_logger("WheelChairSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
-  //     info_.joints[i].name.c_str());
+  for (auto i = 0u; i < hw_commands_.size(); i++)
+  {
+    RCLCPP_INFO(
+      rclcpp::get_logger("WheelChairSystemHardware"), "Got command %.5f for '%s'!", hw_commands_[i],
+      info_.joints[i].name.c_str()); 
 
-  //   hw_velocities_[i] = hw_commands_[i];
-  // }
+    // Simulate sending commands to the hardware
+    // hw_velocities_[i] = hw_commands_[i]; 
+  }
 
 
   uint8_t BASE_COMMAND_WRITE_VELOCITIES[18] = {0x1F, 0xA8, 0x0B, 0x10, 
@@ -247,11 +294,11 @@ hardware_interface::return_type WheelChairSystemHardware::write()
   0x00, 0x00, 0x00, 0x00,
   0x01, 0x01 ,0x1F, 0xA9};
 
-  BASE_COMMAND_WRITE_VELOCITIES[4] = hw_velocities_[0] < 0 ? 0x01 : 0x00;
-  BASE_COMMAND_WRITE_VELOCITIES[9] = hw_velocities_[1] < 0 ? 0x01 : 0x00;
+  BASE_COMMAND_WRITE_VELOCITIES[4] = hw_commands_[0] < 0 ? 0x01 : 0x00;
+  BASE_COMMAND_WRITE_VELOCITIES[9] = hw_commands_[1] < 0 ? 0x01 : 0x00;
 
-  double vel_l_mm_per_sec = hw_velocities_[0] * 1000;
-  double vel_r_mm_per_sec = hw_velocities_[1] * 1000;
+  double vel_l_mm_per_sec = hw_commands_[0] * 1000;
+  double vel_r_mm_per_sec = hw_commands_[1] * 1000;
 
   uint32_t left_vel  = vel_l_mm_per_sec;
   uint32_t right_vel = vel_r_mm_per_sec;
@@ -265,6 +312,21 @@ hardware_interface::return_type WheelChairSystemHardware::write()
   BASE_COMMAND_WRITE_VELOCITIES[11] = (right_vel >> 16) & 0xFF;
   BASE_COMMAND_WRITE_VELOCITIES[12] = (right_vel >> 8) & 0xFF;
   BASE_COMMAND_WRITE_VELOCITIES[13] = (right_vel) & 0xFF;
+
+
+
+  std::stringstream str_command_stream;
+
+  for(int i=0; i<18; i++){
+    str_command_stream << std::hex << std::setw(2) << (int)BASE_COMMAND_WRITE_VELOCITIES[i]; 
+    str_command_stream << " ";
+  }
+  
+  str_command_stream << "\n";
+  std::string str_command = str_command_stream.str();
+
+ RCLCPP_INFO(
+       rclcpp::get_logger("WheelChairSystemHardware"), "Sending Command '%s'!", str_command.c_str()); 
 
 
   std::vector<uint8_t> write_command(BASE_COMMAND_WRITE_VELOCITIES, BASE_COMMAND_WRITE_VELOCITIES + sizeof(BASE_COMMAND_WRITE_VELOCITIES) / sizeof(BASE_COMMAND_WRITE_VELOCITIES[0]) );
