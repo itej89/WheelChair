@@ -25,6 +25,21 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
 endforeach()
 
 
+add_executable(chair_interface
+  hardware/src/ChairInterface.cpp
+)
+target_compile_features(chair_interface PUBLIC cxx_std_17)
+target_include_directories(chair_interface PUBLIC
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/serial-ros2/include>
+$<INSTALL_INTERFACE:include/wheel_chair>
+)
+ament_target_dependencies(
+  chair_interface PUBLIC
+  ${THIS_PACKAGE_INCLUDE_DEPENDS} serial
+)
+
+
 ## COMPILE
 add_library(
   wheel_chair
@@ -69,6 +84,10 @@ install(
   DESTINATION share/wheel_chair
 )
 
+install(TARGETS chair_interface
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(TARGETS wheel_chair
   EXPORT wheel_chair
   ARCHIVE DESTINATION lib
@@ -88,6 +107,5 @@ if(BUILD_TESTING)
 endif()
 
 ## EXPORTS
-ament_export_targets(wheel_chair HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

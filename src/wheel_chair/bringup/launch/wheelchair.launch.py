@@ -70,6 +70,11 @@ def generate_launch_description():
 
 
 
+    chair_interface = Node(
+        package="wheel_chair",
+        executable="chair_interface"
+    )
+
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -126,7 +131,8 @@ def generate_launch_description():
 
     nodes = [
         arg_rvizconfig,
-        control_node,
+        # control_node,
+        chair_interface,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
         # delay_rviz_after_joint_state_broadcaster_spawner,
