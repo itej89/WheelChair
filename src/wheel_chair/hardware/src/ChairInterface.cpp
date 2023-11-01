@@ -22,6 +22,64 @@ ChairInterface::ChairInterface(std::string nodeName): Node(nodeName) {
 
 void ChairInterface::cmdvelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
     RCLCPP_INFO_STREAM(this->get_logger(), "Recieved velocity: " << msg->linear.x << "\n z : " << msg->angular.z);
+    
+
+    double Vl =  (msg->linear.x - (0.55/2)*msg->angular.z)/0.095;
+    double Vr =  (msg->linear.x + (0.55/2)*msg->angular.z)/0.095;
+
+
+
+    // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
+    RCLCPP_INFO(rclcpp::get_logger("ChairInterface"), "Writing...");
+
+
+
+    uint8_t BASE_COMMAND_WRITE_VELOCITIES[18] = {0x1F, 0xA8, 0x0B, 0x10, 
+    0x00, 
+    0x00, 0x00, 0x00, 0x00, 
+    0x00, 
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0x01 ,0x1F, 0xA9};
+
+    BASE_COMMAND_WRITE_VELOCITIES[4] = Vl < 0 ? 0x01 : 0x00;
+    BASE_COMMAND_WRITE_VELOCITIES[9] = Vr < 0 ? 0x01 : 0x00;
+
+    double vel_l_mm_per_sec = abs(Vl) * 1000;
+    double vel_r_mm_per_sec = abs(Vr) * 1000;
+
+    uint32_t left_vel  = vel_l_mm_per_sec;
+    uint32_t right_vel = vel_r_mm_per_sec;
+
+    BASE_COMMAND_WRITE_VELOCITIES[5] = (left_vel >> 24) & 0xFF;
+    BASE_COMMAND_WRITE_VELOCITIES[6] = (left_vel >> 16) & 0xFF;
+    BASE_COMMAND_WRITE_VELOCITIES[7] = (left_vel >> 8) & 0xFF;
+    BASE_COMMAND_WRITE_VELOCITIES[8] = (left_vel) & 0xFF;
+
+    BASE_COMMAND_WRITE_VELOCITIES[10] = (right_vel >> 24) & 0xFF;
+    BASE_COMMAND_WRITE_VELOCITIES[11] = (right_vel >> 16) & 0xFF;
+    BASE_COMMAND_WRITE_VELOCITIES[12] = (right_vel >> 8) & 0xFF;
+    BASE_COMMAND_WRITE_VELOCITIES[13] = (right_vel) & 0xFF;
+
+
+
+    std::stringstream str_command_stream;
+
+    for(int i=0; i<18; i++){
+        str_command_stream << std::hex << std::setw(2) << (int)BASE_COMMAND_WRITE_VELOCITIES[i]; 
+        str_command_stream << " ";
+    }
+    
+    str_command_stream << "\n";
+    std::string str_command = str_command_stream.str();
+
+    RCLCPP_INFO(
+        rclcpp::get_logger("ChairInterface"), "Sending Command '%s'!", str_command.c_str()); 
+
+
+    std::vector<uint8_t> write_command(BASE_COMMAND_WRITE_VELOCITIES, BASE_COMMAND_WRITE_VELOCITIES + sizeof(BASE_COMMAND_WRITE_VELOCITIES) / sizeof(BASE_COMMAND_WRITE_VELOCITIES[0]) );
+    base_port->write(write_command);
+
+
 }
 
 
