@@ -1,6 +1,8 @@
 #include "wheel_chair/ChairInterface.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+#include <fstream>
+
 ChairInterface::ChairInterface(std::string nodeName): Node(nodeName) {
     subscriber = this->create_subscription<geometry_msgs::msg::Twist>("/wheel_chair_base_controller/cmd_vel_unstamped", 10, 
                             std::bind(&ChairInterface::cmdvelCallback, this, std::placeholders::_1));
@@ -23,11 +25,14 @@ ChairInterface::ChairInterface(std::string nodeName): Node(nodeName) {
 void ChairInterface::cmdvelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
     RCLCPP_INFO_STREAM(this->get_logger(), "Recieved velocity: " << msg->linear.x << "\n z : " << msg->angular.z);
     
+    std::ofstream f("log.txt");
 
-    double Vl =  (msg->linear.x - (0.55/2)*msg->angular.z)/0.095;
-    double Vr =  (msg->linear.x + (0.55/2)*msg->angular.z)/0.095;
+// msg->linear.x = 0.1;
+// msg->angular.z = 0.05;
+    double Vr =  (msg->linear.x - (0.55/2)*msg->angular.z)/0.095;
+    double Vl =  (msg->linear.x + (0.55/2)*msg->angular.z)/0.095;
 
-
+    f << msg->linear.x  << ", " << msg->angular.z << "::" << Vr << ", " << Vl << "\n";
 
     // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
     RCLCPP_INFO(rclcpp::get_logger("ChairInterface"), "Writing...");

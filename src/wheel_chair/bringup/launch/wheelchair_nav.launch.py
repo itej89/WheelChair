@@ -29,7 +29,7 @@ def generate_launch_description():
             'params_file': PathJoinSubstitution([
                 FindPackageShare('navigation'),
                 'config',
-                'nav2.yaml'
+                'nav2_rplidar.yaml'
             ])
         }.items()
     )

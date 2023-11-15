@@ -12,10 +12,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     
-
-
     arg_sim = launch_ros.actions.SetParameter(name='use_sim_time', value=False)
-
 
     hw_description_launch = actions.IncludeLaunchDescription(
         launch_description_sources.PythonLaunchDescriptionSource([
@@ -36,16 +33,30 @@ def generate_launch_description():
     
     perception_dir = get_package_share_directory('perception')
 
-    perception_launch = actions.IncludeLaunchDescription(
+    perception_realsense_launch = actions.IncludeLaunchDescription(
         launch_description_sources.PythonLaunchDescriptionSource(
                 perception_dir + '/launch/realsense2.launch.py'))
+
+    perception_rplidar_launch = actions.IncludeLaunchDescription(
+        launch_description_sources.PythonLaunchDescriptionSource(
+                perception_dir + '/launch/rplidar.launch.py'))
 
     
     slam_dir = get_package_share_directory('slam')
 
-    slam_launch = actions.IncludeLaunchDescription(
+    slam_realsense_launch = actions.IncludeLaunchDescription(
         launch_description_sources.PythonLaunchDescriptionSource(
                 slam_dir + '/launch/slam_wheel_chair.launch.py'))
+
+
+    slam_rplidar_launch = actions.IncludeLaunchDescription(
+        launch_description_sources.PythonLaunchDescriptionSource(
+                slam_dir + '/launch/cartographer.launch.py'))
+
+    slam_rplidar_octomap_launch = actions.IncludeLaunchDescription(
+        launch_description_sources.PythonLaunchDescriptionSource(
+                slam_dir + '/launch/occupancy_grid.launch.py'))
+
 
 
     #Make launch description
@@ -54,7 +65,10 @@ def generate_launch_description():
     #Add nodes
     ld.add_action(arg_sim)
     ld.add_action(hw_description_launch)
-    ld.add_action(perception_launch)
-    ld.add_action(slam_launch)
+    ld.add_action(perception_rplidar_launch)
+    ld.add_action(slam_rplidar_launch)
+    ld.add_action(slam_rplidar_octomap_launch)
+    # ld.add_action(perception_realsense_launch)
+    # ld.add_action(slam_realsense_launch)
 
     return ld
