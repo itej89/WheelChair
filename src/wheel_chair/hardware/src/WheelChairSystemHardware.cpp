@@ -299,6 +299,8 @@ hardware_interface::return_type WheelChairSystemHardware::write()
 
   double vel_l_mm_per_sec = hw_commands_[0] * 1000;
   double vel_r_mm_per_sec = hw_commands_[1] * 1000;
+  // vel_l_mm_per_sec = vel_l_mm_per_sec/30;
+  // vel_r_mm_per_sec = vel_r_mm_per_sec/30;
 
   uint32_t left_vel  = vel_l_mm_per_sec;
   uint32_t right_vel = vel_r_mm_per_sec;

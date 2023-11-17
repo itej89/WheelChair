@@ -41,23 +41,25 @@ def generate_launch_description():
             output='screen',
             parameters=[{'use_sim_time': use_sim_time}],
             arguments=['-configuration_directory', cartographer_config_dir,
-                       '-configuration_basename', configuration_basename]),
+                       '-configuration_basename', configuration_basename],
+            remappings=[('/odom', '/laser/odom')]
+                       ),
  
-        DeclareLaunchArgument(
-            'resolution',
-            default_value=resolution,
-            description='Resolution of a grid cell in the published occupancy grid'),
+        # DeclareLaunchArgument(
+        #     'resolution',
+        #     default_value=resolution,
+        #     description='Resolution of a grid cell in the published occupancy grid'),
  
-        DeclareLaunchArgument(
-            'publish_period_sec',
-            default_value=publish_period_sec,
-            description='OccupancyGrid publishing period'),
+        # DeclareLaunchArgument(
+        #     'publish_period_sec',
+        #     default_value=publish_period_sec,
+        #     description='OccupancyGrid publishing period'),
  
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([ThisLaunchFileDir(), '/occupancy_grid.launch.py']),
-            launch_arguments={'use_sim_time': use_sim_time, 'resolution': resolution,
-                              'publish_period_sec': publish_period_sec}.items(),
-        ),
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource([ThisLaunchFileDir(), '/occupancy_grid.launch.py']),
+        #     launch_arguments={'use_sim_time': use_sim_time, 'resolution': resolution,
+        #                       'publish_period_sec': publish_period_sec}.items(),
+        # ),
  
         # Node(
         #     package='rviz2',
