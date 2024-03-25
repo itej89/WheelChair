@@ -175,7 +175,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /plan
       Value: true
-    - Angle Tolerance: 0.10000000149011612
+    - Angle Tolerance: 0.009999999776482582
       Class: rviz_default_plugins/Odometry
       Covariance:
         Orientation:
@@ -195,7 +195,7 @@ Visualization Manager:
       Enabled: true
       Keep: 100
       Name: Odometry
-      Position Tolerance: 0.10000000149011612
+      Position Tolerance: 0.009999999776482582
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -212,7 +212,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /odom
+        Value: /laser_odom
       Value: true
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
@@ -328,7 +328,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 12.59011459350586
+      Distance: 7.979600429534912
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -343,10 +343,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.2447969913482666
+      Pitch: 0.9797970056533813
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.2154078483581543
+      Yaw: 2.4054086208343506
     Saved: ~
 Window Geometry:
   Displays:

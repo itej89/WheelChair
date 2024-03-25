@@ -297,8 +297,8 @@ hardware_interface::return_type WheelChairSystemHardware::write()
   BASE_COMMAND_WRITE_VELOCITIES[4] = hw_commands_[0] < 0 ? 0x01 : 0x00;
   BASE_COMMAND_WRITE_VELOCITIES[9] = hw_commands_[1] < 0 ? 0x01 : 0x00;
 
-  double vel_l_mm_per_sec = hw_commands_[0] * 1000;
-  double vel_r_mm_per_sec = hw_commands_[1] * 1000;
+  double vel_l_mm_per_sec = abs(hw_commands_[0]) * 1000;
+  double vel_r_mm_per_sec = abs(hw_commands_[1]) * 1000;
   // vel_l_mm_per_sec = vel_l_mm_per_sec/30;
   // vel_r_mm_per_sec = vel_r_mm_per_sec/30;
 

@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 # find dependencies
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -37,6 +38,16 @@ $<INSTALL_INTERFACE:include/wheel_chair>
 ament_target_dependencies(
   chair_interface PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS} serial
+)
+
+
+add_executable(pose_to_odom
+  hardware/src/PoseToOdom.cpp
+)
+target_compile_features(pose_to_odom PUBLIC cxx_std_17)
+ament_target_dependencies(
+  pose_to_odom PUBLIC
+  ${THIS_PACKAGE_INCLUDE_DEPENDS} geometry_msgs nav_msgs
 )
 
 
@@ -85,6 +96,10 @@ install(
 )
 
 install(TARGETS chair_interface
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS pose_to_odom
   DESTINATION lib/${PROJECT_NAME}
 )
 
